@@ -1,4 +1,4 @@
 [submodule "opal_data"]
 	path = opal_data
-	url = git@github.com:josepretel/opal_data.git
-	branch = main
+	url = ssh://git@gitlab.cern.ch:7999/fp-ii-z0-decay/opal_data.git
+	branch = master
