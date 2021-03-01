@@ -3,7 +3,7 @@ Precision measurements and tests of the Standard Model using OPAL data at LEP
 
 # Installing with conda
 
-1. Install (anaconda)[https://docs.anaconda.com/anaconda/install/] (miniconda probably works too?).
+1. Install [anaconda](https://docs.anaconda.com/anaconda/install/) (miniconda probably works too?).
 2. `conda env create` reads the `environment.yml` file in this
    repository, creates a new env and installs all necessary packages
    into it.
