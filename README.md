@@ -1,9 +1,11 @@
 # z0-precisionmeasurement
-Precision measurements and tests of the Standard Model using OPAL data at LEP
+
+Z0 decay experiment for the FP2 laboratory course at the Albert-Ludwigs University of Freiburg.
+The goal of this experiment is to carry out precision measurements and tests of the Standard Model using at LEP recorded with the OPAL detector
 
 # Installing with conda
 
-1. Install [anaconda](https://docs.anaconda.com/anaconda/install/) (miniconda probably works too?).
+1. Install [anaconda](https://docs.anaconda.com/anaconda/install/).
 2. `conda env create` reads the `environment.yml` file in this
    repository, creates a new env and installs all necessary packages
    into it.
