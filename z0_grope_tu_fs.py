@@ -7,30 +7,31 @@ import uproot
 import awkward as ak
 import mplhep
 import numpy as np
-import matplotlib.pyplot as plt
 
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 path_to_base_dir = 'Data/'
 
+#reading csv input data to pandas df
 hadron_df = pd.read_csv(path_to_base_dir+'Z_experiment-hadron.csv')
 electron_df = pd.read_csv(path_to_base_dir+'Z_experiment-elektron.csv')
 myon_df = pd.read_csv(path_to_base_dir+'Z_experiment-myon.csv')
 tauon_df = pd.read_csv(path_to_base_dir+'Z_experiment-tauon.csv')
+
 
 print(hadron_df)
 
 
 ecal_sum_e_string = 'ECAL(SumE)'
 hcal_sum_e_string = 'HCAL(SumE)'
-
-#TODO die anderen beiden namen einfügen
 Pcharged_string = 'Ctrk(SumP)'
 Ncharged_string = 'Ctrk(N)'
 
 
 # plt.style.use(mplhep.style.ATLAS) # You can load ATLAS/CMS/ALICE plot style
+
 
 plt.hist(hadron_df[ecal_sum_e_string], histtype='step', bins=20, color='C1', label='hadron')
 plt.hist(electron_df[ecal_sum_e_string], histtype='step',bins=20, color='C2', label='electron')
