@@ -1,13 +1,3 @@
-import numpy as np
-import numpy as np
-import seaborn as sns
-import pandas as pd
-import matplotlib.pyplot as plt
-import uproot
-import awkward as ak
-import mplhep
-import numpy as np
-
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -20,9 +10,7 @@ electron_df = pd.read_csv(path_to_base_dir+'Z_experiment-elektron.csv')
 myon_df = pd.read_csv(path_to_base_dir+'Z_experiment-myon.csv')
 tauon_df = pd.read_csv(path_to_base_dir+'Z_experiment-tauon.csv')
 
-
 print(hadron_df)
-
 
 ecal_sum_e_string = 'ECAL(SumE)'
 hcal_sum_e_string = 'HCAL(SumE)'
@@ -32,7 +20,7 @@ Ncharged_string = 'Ctrk(N)'
 
 # plt.style.use(mplhep.style.ATLAS) # You can load ATLAS/CMS/ALICE plot style
 
-
+# plot histograms for 4 variables for all four particles
 plt.hist(hadron_df[ecal_sum_e_string], histtype='step', bins=20, color='C1', label='hadron')
 plt.hist(electron_df[ecal_sum_e_string], histtype='step',bins=20, color='C2', label='electron')
 plt.hist(myon_df[ecal_sum_e_string], histtype='step',bins=20, color='C3', label='myon')

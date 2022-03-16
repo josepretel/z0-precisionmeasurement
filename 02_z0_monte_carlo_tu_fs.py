@@ -1,18 +1,10 @@
-import numpy as np
-# import seaborn as sns
-# import pandas as pd
-import matplotlib.pyplot as plt
 import uproot
 import awkward as ak
 import mplhep
 import matplotlib as mpl
 import numpy as np
 import matplotlib.pyplot as plt
-
-import pandas as pd
-import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-
 from helper_definitions import plot_hist_of_arrays, get_efficiency_matrix, save_matrix_as_csv
 
 path_to_base_dir = 'Data/'
@@ -51,8 +43,9 @@ for var in variables:
     qq_dic[var] = ak.to_numpy(branches_qq[var])
 
 
-
 all_dic = [ee_dic, mm_dic, tt_dic, qq_dic]
+
+# Create arrays for each variable which has the data for all 4 decay types
 
 Pcharged = []
 Ncharged = []
@@ -163,6 +156,8 @@ cuts_final['qq'] = {'Ncharged' : (6, 60),
 #calculate efficiency matrix for final, optimal cuts
 
 #save cuts final dictionary
+# def save_dictionary(dictionary, path_to_output, verbose=True):
+#     np.save(path_to_output, dictionary)
 np.save(path_to_base_dir+'cuts_final_dict.npy', cuts_final)
 print(f'saving dic to {path_to_base_dir}cuts_final_dict.npy')
 
@@ -179,8 +174,96 @@ print(eff_matrix_final)
 #print(pchar.max())
 
 
+'''Now the code from Jose to determine in uncertainty of the inverse eff matrix'''
+### Number of toy experiments to be done
+ntoy = 1000
+
+### Create numpy matrix of list to append elements of inverted toy matrices
+inverse_toys = np.empty((4, 4))
+
+# Create toy efficiency matrix out of gaussian-distributed random values
+for i in range(0, ntoy, 1):
+    toy_matrix = np.zeros((4, 4))
+    toy_matrix = np.random.normal(eff_matrix_final, error_eff_final, size=(4, 4))
+
+    ### Invert toy matrix
+    inverse_toy = np.linalg.inv(toy_matrix)
+
+    # print(inverse_toys.item(0,0),inverse_toy.item(0,0))
+    # Append values
+    inverse_toys = np.dstack((inverse_toys, inverse_toy))
 
 
+# Define gaussian function to fit to the toy distributions:
+def gauss(x, A, mu, sigma):
+    return A * np.exp(-(x - mu) ** 2 / (2. * sigma ** 2))
+
+
+inverse_errors = np.zeros((4, 4))
+inverse_means = np.zeros((4, 4))
+
+#plot all 16 plots for the error matrix
+fig = plt.figure(figsize=(20, 10), dpi=80)
+fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.2, hspace=0.2)
+ax00 = plt.subplot(4, 4, 1)
+ax01 = plt.subplot(4, 4, 2)
+ax02 = plt.subplot(4, 4, 3)
+ax03 = plt.subplot(4, 4, 4)
+
+ax10 = plt.subplot(4, 4, 5)
+ax11 = plt.subplot(4, 4, 6)
+ax12 = plt.subplot(4, 4, 7)
+ax13 = plt.subplot(4, 4, 8)
+
+ax20 = plt.subplot(4, 4, 9)
+ax21 = plt.subplot(4, 4, 10)
+ax22 = plt.subplot(4, 4, 11)
+ax23 = plt.subplot(4, 4, 12)
+
+ax30 = plt.subplot(4, 4, 13)
+ax31 = plt.subplot(4, 4, 14)
+ax32 = plt.subplot(4, 4, 15)
+ax33 = plt.subplot(4, 4, 16)
+
+axes = [[ax00, ax01, ax02, ax03],
+        [ax10, ax11, ax12, ax13],
+        [ax20, ax21, ax22, ax23],
+        [ax30, ax31, ax32, ax33]]
+
+
+
+# Adapted ranges to fit/plot gaussian distributions successfully
+ranges = [[(1.028, 1.035), (0.00028, 0.0005), (-0.013, -0.008), (-0.0005, 0)],
+          [(0, 0.0002), (1.1, 1.115), (-0.012, -0.005), (0, 0.0001)],
+          [(-0.016, -0.012), (-0.04, -0.03), (1.045, 1.055), (-0.007, -0.004)],
+          [(0, 0.0005), (0.0006, 0.001), (-0.028, -0.024), (1.04, 1.06)]]
+
+
+# Fill histograms for each inverted matrix coefficient:
+for j in range(0, 4, 1):
+    for k in range(0, 4, 1):
+        print(f'j, i:{j},{k}')
+        # Diagonal and off-diagonal terms have different histogram ranges
+        hbins, hedges, _ = axes[j][k].hist(inverse_toys[j, k, :], bins=30, range=ranges[j][k], histtype='step',
+                                           linewidth=2, label=f'toyhist{j}{k}')
+        axes[j][k].legend()
+
+        ## Guess initial parameters of the fit by taking random value from hist and std
+        _p0 = [ntoy / 10., np.mean(inverse_toys[j, k, :]), np.std(inverse_toys[j, k, :])]
+
+        # Get the fitted curve
+        h_mid = 0.5 * (hedges[1:] + hedges[:-1])  # Calculate midpoints for the fit
+        coeffs, _ = curve_fit(gauss, h_mid, hbins, p0=_p0, maxfev=100000)
+        h_fit = gauss(h_mid, *coeffs)
+
+        axes[j][k].plot(h_mid, h_fit, label=f'Fit{j}{k}')
+
+        inverse_means[j, k] = coeffs[1]
+        inverse_errors[j, k] = abs(coeffs[2])
+plt.show()
+
+print(f"Erros for the inverse matrix:\n{inverse_errors}")
+inv_eff_matrix = np.linalg.inv(eff_matrix_final)
 
 
 

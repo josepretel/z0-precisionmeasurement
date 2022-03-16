@@ -4,8 +4,8 @@ import uproot
 import awkward as ak
 from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
-
 from helper_definitions import plot_hist_of_arrays, s_and_t_channel, s_channel, t_channel
+
 
 path_to_base_dir = 'Data/'
 
@@ -19,7 +19,7 @@ branches_detector_data = detector_data[ttree_name].arrays()
 #extract cos(theta) values as an array from detector data
 cos_thet = ak.to_numpy(branches_detector_data['cos_thet'])
 
-#plot cos(theta) values, xlim to one, large number of values with number 999 correspond to wrong detections
+# plot cos(theta) values, xlim to one, large number of values with number 999 correspond to wrong detections
 #TODO: discuss these in the lab report!
 bin_content, bin_edges = plot_hist_of_arrays([cos_thet], [1000],
                                              ['Number of events'], yrange=(0,175), xrange=(-1,1),
@@ -28,11 +28,11 @@ bin_content, bin_edges = plot_hist_of_arrays([cos_thet], [1000],
 
 bin_mid = 0.5*(bin_edges[1:] + bin_edges[:-1]) #Calculate midpoint of the bars
 
-#def start and end position (relativ to cos(theta) array position) for fit
+# def start and end position (relative to cos(theta) array position) for fit
 start_fit = 20
 end_fit = -20
 
-#fit cos(theta) with s and t channel fit
+# fit cos(theta) with s and t channel fit
 coeffs, covariance = curve_fit(s_and_t_channel, bin_mid[start_fit:end_fit], bin_content[start_fit:end_fit],
                                      sigma = np.sqrt(bin_content[start_fit:end_fit]), absolute_sigma = True)
 
@@ -44,7 +44,7 @@ chi_sqrd_fit = np.sum((bin_content[start_fit:end_fit]-s_and_t_channel(bin_mid[st
 
 print('S=', coeffs[0], r'$\pm$', np.sqrt(covariance[0][0]), '\n', 'T=', coeffs[1], r'$\pm$', np.sqrt(covariance[1][1])) # Print results for fit parameters
 
-#define cut for t channel
+# define cut for t channel
 cut = 0.70
 
 plt.errorbar(bin_mid[start_fit:end_fit], s_and_t_channel(bin_mid[start_fit:end_fit], *coeffs), fmt='-', label='s and t channel')

@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-
+import pandas as pd
 
 def plot_hist_of_arrays(list_of_arrays,
                         list_of_bins,
