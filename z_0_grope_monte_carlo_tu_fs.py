@@ -6,14 +6,15 @@ import matplotlib.pyplot as plt
 import uproot
 import awkward as ak
 import mplhep
+import matplotlib as mpl
 import numpy as np
 import matplotlib.pyplot as plt
 
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 
-from helper_definitions import plot_hist_of_arrays
-
+from helper_definitions import plot_hist_of_arrays, get_efficiency_matrix
 
 path_to_base_dir = 'Data/'
 
@@ -115,6 +116,60 @@ plot_hist_of_arrays(list_of_arrays=E_hcal,
 #                     # xrange=(0,120),
 #                     # yrange=(0,6000),
 #                     )
+
+### define cuts
+cuts_initial = {'ee' : {}, 'mm' : {}, 'tt' : {}, 'qq' : {}}
+
+# cuts manually defined by looking at the graphs
+cuts_initial['ee'] = {'Ncharged' : (0, 6),
+              'Pcharged' : (0,120),
+              'E_ecal' : (70,120),
+              'E_hcal' : (0,10)}
+cuts_initial['mm'] = {'Ncharged' : (0, 6),
+              'Pcharged' : (0,120),
+              'E_ecal' : (0,15),
+              'E_hcal' : (0,10)}
+cuts_initial['tt'] = {'Ncharged' : (0, 6),
+              'Pcharged' : (0,60),
+              'E_ecal' : (0,60),
+              'E_hcal' : (0,120)}
+cuts_initial['qq'] = {'Ncharged' : (6, 60),
+              'Pcharged' : (0,120),
+              'E_ecal' : (40,80),
+              'E_hcal' : (0,120)}
+
+eff_matrix_initial, error_eff_initial = get_efficiency_matrix(all_dic, cuts_initial, variables=variables)
+print(f'initial cut guess efficiency matrix:')
+print(eff_matrix_initial, error_eff_initial)
+
+#optimise the cuts to obtain the final cuts below:
+
+cuts_final = {'ee' : {}, 'mm' : {}, 'tt' : {}, 'qq' : {}}
+
+# cuts manually defined by looking at the graphs
+cuts_final['ee'] = {'Ncharged' : (0, 6),
+              'Pcharged' : (0,120),
+              'E_ecal' : (70,120),
+              'E_hcal' : (0,10)} # we tried reducing to (0, 8), but this only reduced the tau assignment minorly,
+                                    # but cut quite a few actual electrons
+cuts_final['mm'] = {'Ncharged' : (0, 6),
+              'Pcharged' : (60,120), # this was the key to eliminate the tauons that passed. This however cuts all muons at 0, which are 4494, which are 5%, but it was worth because it eliminates almost all tauons. Then we increased the other windows to get the muons back up to 90%
+              'E_ecal' : (0,20),
+              'E_hcal' : (0,15)}
+cuts_final['tt'] = {'Ncharged' : (0, 6),
+              'Pcharged' : (1,70), # with setting lower bound to 1, most muons (at 0) disappeared, opening to 70 increased tauons a lot
+              'E_ecal' : (0,80), # opening to to 80 only increased tauons but not the others
+              'E_hcal' : (0,120)}
+cuts_final['qq'] = {'Ncharged' : (6, 60),
+              'Pcharged' : (1,120),
+              'E_ecal' : (35,90), # this increased the acceptance of hadrons
+              'E_hcal' : (1,120)}
+eff_matrix_final, error_eff_final = get_efficiency_matrix(all_dic, cuts_final, variables=variables)
+print(f'final cut guess efficiency matrix:')
+print(eff_matrix_final)
+
+# def calculate_efficiency_matrix_and_save():
+#     matrix,
 
 
 
