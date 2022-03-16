@@ -1,5 +1,4 @@
 import numpy as np
-import numpy as np
 # import seaborn as sns
 # import pandas as pd
 import matplotlib.pyplot as plt
@@ -38,7 +37,7 @@ variables = ['Pcharged', 'Ncharged', 'E_ecal', 'E_hcal']
 ### Print list of 'branches' of the TTree (i.e. list of variable names) - is the same for all files
 print(ee_data[ttree_name].keys())
 
-# create dictionaries for each deacy product
+# create dictionaries for each decay product
 ee_dic = {}
 mm_dic = {}
 tt_dic = {}
@@ -73,6 +72,8 @@ for dic in all_dic:
 
 decay_types = ['electron', 'myon', 'tauon', 'hadron']
 
+# plot histogams for all four variables with all four decay types per variable
+# use an adequate binning, and x/y range
 plot_hist_of_arrays(list_of_arrays=Pcharged,
                     list_of_labels=decay_types,
                     list_of_bins=[1000,1000,1000,1000],
@@ -109,15 +110,8 @@ plot_hist_of_arrays(list_of_arrays=E_hcal,
                     xlabel='E_hcal [GeV]'
                     )
 
-# plot_hist_of_arrays(list_of_arrays=Pcharged,
-#                     list_of_labels=decay_types,
-#                     list_of_bins=[1000,1000,1000,1000],
-#                     title='Pcharged open windows',
-#                     # xrange=(0,120),
-#                     # yrange=(0,6000),
-#                     )
 
-### define cuts
+# define cuts
 cuts_initial = {'ee' : {}, 'mm' : {}, 'tt' : {}, 'qq' : {}}
 
 # cuts manually defined by looking at the graphs
@@ -138,15 +132,17 @@ cuts_initial['qq'] = {'Ncharged' : (6, 60),
               'E_ecal' : (40,80),
               'E_hcal' : (0,120)}
 
+#calculate efficinecy matrix for initial guess
 eff_matrix_initial, error_eff_initial = get_efficiency_matrix(all_dic, cuts_initial, variables=variables)
 print(f'initial cut guess efficiency matrix:')
 print(eff_matrix_initial, error_eff_initial)
+
 
 #optimise the cuts to obtain the final cuts below:
 
 cuts_final = {'ee' : {}, 'mm' : {}, 'tt' : {}, 'qq' : {}}
 
-# cuts manually defined by looking at the graphs
+# cuts optimised by looking at the graphs individually
 cuts_final['ee'] = {'Ncharged' : (0, 6),
               'Pcharged' : (0,120),
               'E_ecal' : (70,120),
@@ -164,13 +160,10 @@ cuts_final['qq'] = {'Ncharged' : (6, 60),
               'Pcharged' : (1,120),
               'E_ecal' : (35,90), # this increased the acceptance of hadrons
               'E_hcal' : (1,120)}
+#calculate efficiency matrix for final, optimal cuts
 eff_matrix_final, error_eff_final = get_efficiency_matrix(all_dic, cuts_final, variables=variables)
 print(f'final cut guess efficiency matrix:')
 print(eff_matrix_final)
-
-# def calculate_efficiency_matrix_and_save():
-#     matrix,
-
 
 
 ## Define an numpy array for 'Pcharged'

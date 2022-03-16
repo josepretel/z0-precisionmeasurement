@@ -32,9 +32,9 @@ def plot_hist_of_arrays(list_of_arrays,
     counter = 0
     for array in list_of_arrays:
         if xrange:
-            plt.hist(array, histtype=histtype, label=list_of_labels[counter], bins=list_of_bins[counter], range=xrange)
+            bin_content, bins_edges, _ = plt.hist(array, histtype=histtype, label=list_of_labels[counter], bins=list_of_bins[counter], range=xrange)
         else:
-            plt.hist(array, histtype=histtype, label=list_of_labels[counter], bins=list_of_bins[counter])
+            bin_content, bins_edges, _ = plt.hist(array, histtype=histtype, label=list_of_labels[counter], bins=list_of_bins[counter])
 
         counter = counter + 1
 
@@ -52,4 +52,6 @@ def plot_hist_of_arrays(list_of_arrays,
             print(f'saving plot to {path_to_save_fig}')
     if verbose:
         plt.show()
+
+    return bin_content, bins_edges
 
