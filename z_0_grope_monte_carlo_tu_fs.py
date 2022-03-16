@@ -161,6 +161,11 @@ cuts_final['qq'] = {'Ncharged' : (6, 60),
               'E_ecal' : (35,90), # this increased the acceptance of hadrons
               'E_hcal' : (1,120)}
 #calculate efficiency matrix for final, optimal cuts
+
+#save cuts final dictionary
+np.save(path_to_base_dir+'cuts_final_dict.npy', cuts_final)
+print(f'saving dic to {path_to_base_dir}cuts_final_dict.npy')
+
 eff_matrix_final, error_eff_final = get_efficiency_matrix(all_dic, cuts_final, variables=variables)
 print(f'final cut guess efficiency matrix:')
 print(eff_matrix_final)

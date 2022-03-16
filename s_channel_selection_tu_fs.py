@@ -36,15 +36,38 @@ end_fit = -20
 coeffs, covariance = curve_fit(s_and_t_channel, bin_mid[start_fit:end_fit], bin_content[start_fit:end_fit],
                                      sigma = np.sqrt(bin_content[start_fit:end_fit]), absolute_sigma = True)
 
-errors_st_fit = np.sqrt(np.diag(covariance)) # determine the uncertainties of the fit parameters
+errors_st_fit = np.sqrt(np.diag(covariance)) # determine the (uncorrelated) uncertainties of the fit parameters
 
 chi_sqrd_fit = np.sum((bin_content[start_fit:end_fit]-s_and_t_channel(bin_mid[start_fit:end_fit], *coeffs))**2
                       /np.sqrt(bin_content[start_fit:end_fit])**2)/len(bin_content[start_fit:end_fit])  # Calculate chi squared/dof for the fit
 
 
-'''Here we picture the distribution of the measured values of cos(theta). Around 6/7 of the data points had a default 
-value of 999, which were cut off in this histogramm. The fit was not performed over the whole range of [-1, 1]
- in order to neglect disturbing values at the boundaries and get a decent fit. We obtained the '''
+print('S=', coeffs[0], r'$\pm$', np.sqrt(covariance[0][0]), '\n', 'T=', coeffs[1], r'$\pm$', np.sqrt(covariance[1][1])) # Print results for fit parameters
+
+#define cut for t channel
+cut = 0.70
+
+plt.errorbar(bin_mid[start_fit:end_fit], s_and_t_channel(bin_mid[start_fit:end_fit], *coeffs), fmt='-', label='s and t channel')
+plt.errorbar(bin_mid[start_fit:end_fit], s_channel(bin_mid[start_fit:end_fit], coeffs[0]), fmt='--', label='s channel')
+plt.errorbar(bin_mid[start_fit:end_fit], t_channel(bin_mid[start_fit:end_fit], coeffs[1]), fmt=':', label='t channel')
+plt.axvline(cut, label='cut', color='C7', ls='--')
+plt.legend()
+plt.show()
+
+
+def integral_s_all(S):
+    return 8/3 * S
+
+'''
+Here we picture the distribution of the measured values of cos(theta). Around 6/7 of the data points had a default 
+value of 999, which were cut off in this histogram. The fit was not performed over the whole range of [-1, 1]
+ in order to neglect disturbing values at the boundaries and get a decent fit. We obtained the contributions
+ S=11.34 \pm 0.10 of the s-channel and T=0.257 \pm 0.006 of the t-channel. Based on the fit of both those 
+  contributions a cut at cos(theta)<=0.7 is chosen to select only s-channel events. However, this also cuts
+  some s-channel events with a higher value. To quantify how many we evaluate the following integrals. The total number
+  events that we identify as s-channel contribute to the integral of s- and t-channel in the interval [-1, 0.7].
+  The actual number of s-channel events can be determined by the integral of only the s-channel contribution between 
+  [-1, 1]. The ratio of this determines how we have to correct the number of s-channel events we found.'''
 
 
 print('done')
