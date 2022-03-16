@@ -14,7 +14,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
-from helper_definitions import plot_hist_of_arrays, get_efficiency_matrix
+from helper_definitions import plot_hist_of_arrays, get_efficiency_matrix, save_matrix_as_csv
 
 path_to_base_dir = 'Data/'
 
@@ -183,6 +183,12 @@ print(eff_matrix_final)
 
 
 
+
+
+
+# saving inverted matrix and corresponding error matrix to use in other python file
+save_matrix_as_csv(matrix_array=inv_eff_matrix, path_to_save_csv=path_to_base_dir+'matrix_invers.csv')
+save_matrix_as_csv(matrix_array=inverse_errors, path_to_save_csv=path_to_base_dir+'matrix_invers_errors.csv')
 
 
 print('done')
