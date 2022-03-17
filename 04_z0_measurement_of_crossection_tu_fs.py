@@ -4,7 +4,8 @@ import uproot
 import awkward as ak
 from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
-from helper_definitions import import_dictionary, import_matrix_from_csv, apply_cuts, Breit_Wigner
+from helper_definitions import import_dictionary, import_matrix_from_csv, apply_cuts, breit_wigner_distribution, \
+    plot_cme_cross_sec
 
 path_to_base_dir = 'Data/'
 
@@ -23,6 +24,7 @@ detector_supplementary_data_df = pd.read_csv(path_to_base_dir + 'daten_1.csv')
 
 ttree_name = 'myTTree'
 branches_detector_data = detector_data[ttree_name].arrays()
+
 
 dic_data = {}  # dictionary for data arrays of variables
 variables = ['Pcharged', 'Ncharged', 'E_ecal', 'E_hcal', 'cos_thet']  # required arrays in the analysis
@@ -100,30 +102,23 @@ print('qq:', cross_sections[3], 'with errors', u_cross_section[3])
 xs_corrections = { 'energy' : [ 88.47, 89.46, 90.22, 91.22, 91.97, 92.96, 93.76] ,
                       'hadronic' : [2.0, 4.3, 7.7, 10.8, 4.7, -0.2, -1.6],
                       'leptonic' : [0.09, 0.20, 0.36, 0.52, 0.22, -0.01, -0.08]}
+cross_sections_corrected = np.zeros((4,7))
+cross_sections_corrected[0] = cross_sections[0] + xs_corrections['leptonic']
+cross_sections_corrected[1] = cross_sections[1] + xs_corrections['leptonic']
+cross_sections_corrected[2] = cross_sections[2] + xs_corrections['leptonic']
+cross_sections_corrected[3] = cross_sections[3] + xs_corrections['hadronic']
+
 
 
 #plotting CME vs cross section:
 
-def plot_cme_cross_sec(energy_data,
-                       cross_section_data,
-                       cross_section_data_error,
-                       fit=True,
-                       xlabel='energy [GeV]',
-                       ylabel='cross section [nb]',
-                       verbose=True):
-    plt.errorbar(energy_data, cross_section_data, yerr=cross_section_data_error, fmt='x')
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.legend()
-    if fit:
-        coeffs, covariance = curve_fit(Breit_Wigner, energy_data, cross_section_data,
-                                       sigma=cross_section_data_error, absolute_sigma=True)
-
-        plt.errorbar(energy_data, Breit_Wigner(cross_section_data, *coeffs), fmt='-',
-                     label='Breit Wigner fit')
-
-    plt.show()
 
 plot_cme_cross_sec(com_energies, cross_sections[0], cross_section_data_error=u_cross_section[0])
+plot_cme_cross_sec(com_energies, cross_sections[1], cross_section_data_error=u_cross_section[1], title=r'$\mu^{+}\mu^{-}$')
+plot_cme_cross_sec(com_energies, cross_sections[2], cross_section_data_error=u_cross_section[2], title=r'$\tau^{+}\tau^{-}$')
+plot_cme_cross_sec(com_energies, cross_sections[3], cross_section_data_error=u_cross_section[3], title=r'$q\bar{q}$')
+'''The relative errorbars of the hadronic crosssections are considerably smaller due to the higher number of hadronic 
+events. This reduces the Poisson error.'''
+
 
 print('done')
