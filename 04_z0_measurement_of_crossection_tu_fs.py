@@ -4,7 +4,7 @@ import uproot
 import awkward as ak
 from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
-from helper_definitions import import_dictionary, import_matrix_from_csv, apply_cuts
+from helper_definitions import import_dictionary, import_matrix_from_csv, apply_cuts, Breit_Wigner
 
 path_to_base_dir = 'Data/'
 
@@ -12,8 +12,8 @@ path_to_base_dir = 'Data/'
 dic_cuts = import_dictionary(path_to_base_dir + 'cuts_final_dict.npy')
 
 # Add cos_theta bounds to the cuts dictionary
-dic_cuts['ee']['cos_thet'] = (-1, 0.7)  # add s-channel cut to the dictionary
-dic_cuts['mm']['cos_thet'] = (-1, 1000)
+dic_cuts['ee']['cos_thet'] = (-1, 0.7)  # add s-channel cut to ee events of the dictionary
+dic_cuts['mm']['cos_thet'] = (-1, 1000)  # no cut applied to all other events (mm, tt, qq)
 dic_cuts['tt']['cos_thet'] = (-1, 1000)
 dic_cuts['qq']['cos_thet'] = (-1, 1000)
 
@@ -31,11 +31,12 @@ for var in variables:  # fill data dictionary with desired variable arrays
 
 E_lep = ak.to_numpy(branches_detector_data['E_lep'])
 
+# extract the luminosities from the detectos supp. data df into new array
 luminosities = np.array(detector_supplementary_data_df['lumi'])
 
 '''Identify which COM energy each event corresponds to'''
 com_energies = np.array([88.47, 89.46, 90.22, 91.22, 91.97, 92.96, 93.76])
-E_lep_edges = [44, 44.5, 45, 45.5, 45.7, 46, 46.5,  47] # edges of the energy intervals for each COM energy
+E_lep_edges = [44, 44.5, 45, 45.5, 45.7, 46, 46.5, 47]  # edges of the energy intervals for each COM energy: manually
 
 energies_datapoints = np.zeros(len(E_lep))
 for (i, com_energy) in zip(range(7), com_energies): # identify which events are in the invervals
@@ -46,17 +47,9 @@ for (i, com_energy) in zip(range(7), com_energies): # identify which events are 
 
 dic_data['com_energy'] = energies_datapoints
 
-
-
-
-
-
-masks = apply_cuts(dic_cuts, dic_data)
-mask_cos = dic_data['cos_thet'] <= 0.7
-overlap = masks['ee'] * mask_cos
-
-number_of_events = np.array([sum(masks['ee']), sum(masks['mm']), sum(masks['tt']),
-                             sum(masks['qq'])])  # Counts the number of events that passed the cuts for each decay mode
+#number_of_events = np.array([sum(masks_variables['ee']), sum(masks_variables['mm']), sum(masks_variables['tt']),
+ #                            sum(masks_variables[
+  #                                   'qq'])])  # Counts the number of events that passed the cuts for each decay mode
 u_number_of_events = np.sqrt(number_of_events)
 '''The uncertainty of the number of events that pass the filter can be determined by a poisson distribution since the 
 numbers are sufficiently high.'''
@@ -75,28 +68,62 @@ cov_branch = np.zeros((4, 4))
 for i in range(4):
     for j in range(4):
         for k in range(4):
-            cov_branch[i][j] += (inv_eff_matrix[i][k] * inv_eff_matrix[j][k] * (u_number_of_events[k] ** 2))
-            if i == j: # Kronecker delta
-                cov_branch[i][j] += (number_of_events[k] ** 2 * inv_eff_matrix_error[i][k] ** 2)
-            else:
-                continue
+            diag_cov_branch[i][j] += (number_of_events[k][j] ** 2 * inv_eff_matrix_error[i][k] ** 2) + \
+                                ((inv_eff_matrix[i][k] ** 2) * (u_number_of_events[k][j] ** 2))
 
-
-errors_branch = np.sqrt(np.diag(cov_branch))
-
-
-
-
-
-
-
+errors_branch = np.sqrt(diag_cov_branch)
 
 '''Determine the crosssection by dividing the branching rations by all 7 luminosities'''
 
+cross_sections = branching_ratio / luminosities[None, :]
+
+'''The uncertainty of the cross section can easily be determined by a Gaussian error propagation because there is 
+no correlation between the values of the luminosities and the branching ratio.'''
+
+# extract the luminosities "errors all" from the detectos supp. data df into new array
+# errors all includes both the statistical and the systematical errors
+luminosities_error_all = np.array(detector_supplementary_data_df['all'])
+
+relative_u_branch = errors_branch / branching_ratio
+relative_u_lumi = luminosities_error_all/luminosities
+
+relative_u_cross_sections = np.sqrt((relative_u_branch)**2 + (relative_u_lumi[None, :])**2)
+u_cross_section = relative_u_cross_sections * cross_sections
+
+print('The crosssections for the 4 decay modes are:', '\n', 'ee:', cross_sections[0], 'with errors', u_cross_section[0])
+print('mm:', cross_sections[1], 'with errors', u_cross_section[1])
+print('tt:', cross_sections[2], 'with errors', u_cross_section[2])
+print('qq:', cross_sections[3], 'with errors', u_cross_section[3])
 
 
+# XS correction values need to be added to the data
+xs_corrections = { 'energy' : [ 88.47, 89.46, 90.22, 91.22, 91.97, 92.96, 93.76] ,
+                      'hadronic' : [2.0, 4.3, 7.7, 10.8, 4.7, -0.2, -1.6],
+                      'leptonic' : [0.09, 0.20, 0.36, 0.52, 0.22, -0.01, -0.08]}
 
 
-cross_sections = branching_ratio[:, None] / luminosities[None, :]
+#plotting CME vs cross section:
+
+def plot_cme_cross_sec(energy_data,
+                       cross_section_data,
+                       cross_section_data_error,
+                       fit=True,
+                       xlabel='energy [GeV]',
+                       ylabel='cross section [nb]',
+                       verbose=True):
+    plt.errorbar(energy_data, cross_section_data, yerr=cross_section_data_error, fmt='x')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.legend()
+    if fit:
+        coeffs, covariance = curve_fit(Breit_Wigner, energy_data, cross_section_data,
+                                       sigma=cross_section_data_error, absolute_sigma=True)
+
+        plt.errorbar(energy_data, Breit_Wigner(cross_section_data, *coeffs), fmt='-',
+                     label='Breit Wigner fit')
+
+    plt.show()
+
+plot_cme_cross_sec(com_energies, cross_sections[0], cross_section_data_error=u_cross_section[0])
 
 print('done')
