@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pandas as pd
 
+
 def plot_hist_of_arrays(list_of_arrays,
                         list_of_bins,
                         list_of_labels,
@@ -15,27 +16,28 @@ def plot_hist_of_arrays(list_of_arrays,
                         verbose=True
                         ):
     '''
-
-    :param list_of_arrays:
-    :param list_of_bins:
-    :param list_of_labels:
+    This function plots a histogram for a list of arrays
+    :param list_of_arrays: input list of arrays to be plotted in a histogram
+    :param list_of_bins: input list of bins to apply for the arrays for the histogram
+    :param list_of_labels: input list of labels for the histograms
     :param histtype: step is the one we use here
-    :param xlabel:
-    :param ylabel:
-    :param xrange:
-    :param yrange:
-    :param title:
-    :param path_to_save_fig:
+    :param xlabel: string for label x axis of histogram
+    :param ylabel: string for label y axis of histogram
+    :param xrange: tuple for x range of histogram
+    :param yrange: tuple for y range of histogram
+    :param title: string for title of histogram
+    :param path_to_save_fig: string for path to save histogram
     :param verbose:
-    :return:
+    :return: bin content and bin edges for all input data
     '''
     counter = 0
     for array in list_of_arrays:
         if xrange:
-            bin_content, bins_edges, _ = plt.hist(array, histtype=histtype, label=list_of_labels[counter], bins=list_of_bins[counter], range=xrange)
+            bin_content, bins_edges, _ = plt.hist(array, histtype=histtype, label=list_of_labels[counter],
+                                                  bins=list_of_bins[counter], range=xrange)
         else:
-            bin_content, bins_edges, _ = plt.hist(array, histtype=histtype, label=list_of_labels[counter], bins=list_of_bins[counter])
-
+            bin_content, bins_edges, _ = plt.hist(array, histtype=histtype, label=list_of_labels[counter],
+                                                  bins=list_of_bins[counter])
         counter = counter + 1
 
     plt.xlabel(xlabel)
