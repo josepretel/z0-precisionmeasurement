@@ -2,10 +2,8 @@ import numpy as np
 import pandas as pd
 import uproot
 import awkward as ak
-from matplotlib import pyplot as plt
-from scipy.optimize import curve_fit
 from helper_definitions import import_dictionary, import_matrix_from_csv, apply_cuts, breit_wigner_distribution, \
-    plot_cme_cross_sec
+    plot_cme_cross_sec, t_test, get_gamma_ee, get_gamma_ee_error, get_gamma_ff, get_gamma_ff_error, save_dictionary
 
 path_to_base_dir = 'Data/'
 
@@ -82,7 +80,7 @@ cross_sections = branching_ratio / luminosities[None, :]
 '''The uncertainty of the cross section can easily be determined by a Gaussian error propagation because there is 
 no correlation between the values of the luminosities and the branching ratio.'''
 
-# extract the luminosities "errors all" from the detectos supp. data df into new array
+# extract the luminosities "errors all" from the detectors supp. data df into new array
 # errors all includes both the statistical and the systematical errors
 luminosities_error_all = np.array(detector_supplementary_data_df['all'])
 
@@ -120,5 +118,17 @@ plot_cme_cross_sec(com_energies, cross_sections[3], cross_section_data_error=u_c
 '''The relative errorbars of the hadronic crosssections are considerably smaller due to the higher number of hadronic 
 events. This reduces the Poisson error.'''
 
+
+'''
+Next a t test is performed to check experiment data with literature values.
+Literature is taken from P.A. Zyla et al. (Particle Data Group), Prog. Theor. Exp. Phys. 2020, 083C01 (2020) and 2021 update.
+https://pdglive.lbl.gov/DataBlock.action?node=S044W#details-citation-1
+'''
+
+MZ_literature = 91.1876
+u_MZ = 0.0021
+width_literature = 2.4952
+u_width = 0.0023
+t_test_values = np.zeros((4, 2))
 
 print('done')
