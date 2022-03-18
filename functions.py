@@ -31,6 +31,9 @@ def get_efficiency(data,cuts,relevant_vars):
 	# The variance is V(eps) = V(X/N) = 1/N^2 sum(V(X)) = 1/N^2 V(sum_{i=1,...,N} Y) = 1/ N V(Y) = 1/N eps(1-eps)
 	# Summary: eps = k/N, sigma_eps^2 = 1/N eps(1-eps) -> sigma_eps = sqrt(1/N eps(1-eps))
 	
+	# However this methods results in absued limiting cases: for eps = 0,1 the error is 0. This is unphysical
+	# A correct treatment of the errors is supplied in https://arxiv.org/abs/physics/0701199. We use their results directly in the code below:
+	
 	for channel_i,cuts_i in cuts.items():
 		for channel_j,rel_vars in relevant_vars[channel_i].items():
 			passed = 0
@@ -40,9 +43,9 @@ def get_efficiency(data,cuts,relevant_vars):
 				mask1 = data[channel_j][var] < cuts_i[var][1]
 				total +=len(mask0)
 				passed += sum(mask0)+sum(mask1)-len(mask0)
-			eps = passed / total
+			eps = (passed+1)/(total+2)
 			efficiency_matrix[el[channel_i]][el[channel_j]]=eps
-			error_matrix[el[channel_i]][el[channel_j]] = np.sqrt(1/total * eps* (1-eps))
+			error_matrix[el[channel_i]][el[channel_j]] = np.sqrt(eps * (passed+2)/(total+3) - eps**2)
 			
 				
 	return efficiency_matrix,error_matrix
