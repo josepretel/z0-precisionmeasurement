@@ -16,13 +16,8 @@ ttree_name = 'myTTree'
 ## Load branches into arrays
 branches_ee = ee_data[ttree_name].arrays()
 
-
-
-
-
 # extract cos(theta) values as an array from detector data
 cos_thet = ak.to_numpy(branches_ee['cos_thet'])
-
 
 
 # plot cos(theta) values, xlim to one, large number of values with number 999 correspond to wrong detections
