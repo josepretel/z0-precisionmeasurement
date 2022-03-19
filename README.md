@@ -23,7 +23,7 @@ Thus, if something in the code does not work you might have to restart the kerne
 In case that the calculation of the error on the inverse matrix does not work you might have to change the ranges or add parameters to the p0 list we added.
 
 There are no extra packages that you have to use other than the ones you find in the first / second cell of the code.
-The code file is called z0_experiment.ipynb.
+The code file is called z0_experiment_group_1.ipynb.
 The files needed in order to run the code are:
 daten_2.csv
 daten_2.root
