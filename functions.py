@@ -3,7 +3,7 @@ import numpy as np
 import awkward as ak
 
 
-def get_efficiency(data,cuts,relevant_vars):
+def get_efficiency_matrix(data,cuts,relevant_vars):
 	efficiency_matrix = np.zeros((4,4))
 	error_matrix = np.zeros((4,4))
 	
@@ -31,7 +31,7 @@ def get_efficiency(data,cuts,relevant_vars):
 	# The variance is V(eps) = V(X/N) = 1/N^2 sum(V(X)) = 1/N^2 V(sum_{i=1,...,N} Y) = 1/ N V(Y) = 1/N eps(1-eps)
 	# Summary: eps = k/N, sigma_eps^2 = 1/N eps(1-eps) -> sigma_eps = sqrt(1/N eps(1-eps))
 	
-	# However this methods results in absued limiting cases: for eps = 0,1 the error is 0. This is unphysical
+	# However this methods results in absurd limiting cases: for eps = 0,1 the error is 0. This is unphysical
 	# A correct treatment of the errors is supplied in https://arxiv.org/abs/physics/0701199. We use their results directly in the code below:
 	
 	for channel_i,cuts_i in cuts.items():
@@ -49,3 +49,6 @@ def get_efficiency(data,cuts,relevant_vars):
 			
 				
 	return efficiency_matrix,error_matrix
+	
+	
+
